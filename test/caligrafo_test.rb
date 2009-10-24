@@ -1,5 +1,4 @@
 require 'test_helper'
-
 require 'caligrafo'
 require 'ostruct'
 
@@ -23,6 +22,7 @@ class CaligrafoTest < Test::Unit::TestCase
   def teardown
     File.delete 'arquivo_gerado.txt'
   end
+
   def test_gerar_arquivo_texto
     pessoa = Pessoa.new :nome => 'Lucas', :idade => 25, :telefones => ['86 2321 2321', '86 3232 1232']
     given_file = pessoa.gerar_arquivo_texto
@@ -35,6 +35,5 @@ Fone1: 86 3232 1232
     EOF
     end
     assert_equal_files 'test/arquivo_esperado.txt', given_file
-
   end
 end
