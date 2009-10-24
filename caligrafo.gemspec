@@ -22,6 +22,8 @@ Gem::Specification.new do |s|
      "LICENSE",
      "README.rdoc",
      "Rakefile",
+     "VERSION",
+     "caligrafo.gemspec",
      "lib/caligrafo.rb",
      "test/arquivo_esperado.txt",
      "test/caligrafo_test.rb",
