@@ -6,12 +6,10 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "caligrafo"
     gem.summary = %Q{DSL para geração de arquivos texto.}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.description = %Q{DSL para geração de arquivos texto.}
     gem.email = "castro.lucas@gmail.com"
     gem.homepage = "http://github.com/lucasdecastro/caligrafo"
     gem.authors = ["Lucas de Castro"]
-    gem.add_development_dependency "thoughtbot-shoulda"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
@@ -23,21 +21,6 @@ Rake::TestTask.new(:test) do |test|
   test.pattern = 'test/**/*_test.rb'
   test.verbose = true
 end
-
-begin
-  require 'rcov/rcovtask'
-  Rcov::RcovTask.new do |test|
-    test.libs << 'test'
-    test.pattern = 'test/**/*_test.rb'
-    test.verbose = true
-  end
-rescue LoadError
-  task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
-  end
-end
-
-task :test => :check_dependencies
 
 task :default => :test
 
