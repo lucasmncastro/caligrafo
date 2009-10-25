@@ -29,6 +29,9 @@ class Test::Unit::TestCase
         column = Diff::LCS.diff(line, lines_of_given_text[index]).first.first.position + 1
         raise Test::Unit::AssertionFailedError, "Line #{index + 1} dont match on column #{column}:\n#{e.message}"
       end
+      if expected_text.to_a.size < given_text.to_a.size
+        assert_equal expected_text, given_text 
+      end
     end
   end
 end

@@ -1,158 +1,178 @@
 module Caligrafo
   def self.included(base)
     base.instance_eval do
-      extend  ClassMethods
       include InstanceMethods
     end
   end
 
-  module ClassMethods
-    def arquivo_info 
-      @@arquivo_info
+  module InstanceMethods
+    def criar_arquivo(nome_arquivo, &bloco)
+      arquivo = Arquivo.new(nome_arquivo, bloco)
+      arquivo.criar_arquivo
+      nome_arquivo    
+    end
+  end
+
+  @@formatos = {
+    :decimal => Proc.new do |valor|
+       ('%.2f' % valor).gsub('.','')
+    end 
+  }
+
+  def self.formatos
+    @@formatos
+  end
+
+  def self.formato(nome, &bloco)
+    @@formatos[nome] = bloco
+  end
+  
+
+  class Arquivo
+    attr_reader   :nome, :bloco
+    attr_accessor :objeto, :indice, :linha, :numero_linha, :file
+
+    def initialize(nome, bloco)
+      @nome = nome
+      @bloco = bloco
+      @linha = ''
+      @numero_linha = 1
     end
 
-    def arquivo_info=(arquivo_info)
-      @@arquivo_info = arquivo_info
-    end
+    def criar_arquivo
+      # Se eu simplesmente chamasse o bloco, os método de Arquivo
+      # não estariam disponíveis. ;)
+      self.class.send :define_method, :executar_bloco, &bloco 
 
-    def arquivo_texto(nome, &bloco)
-      self.arquivo_info = ArquivoInfo.new nome
-      bloco.call
+      self.objeto = bloco.binding.eval "self"
+
+      File.open(nome, 'w') do |file|
+        self.file = file
+        executar_bloco
+      end
+
+      nome
     end
 
     def secao(nome, &bloco)
-      info_secao = SecaoInfo.new(nome, bloco)
-      self.arquivo_info.secoes << info_secao 
-    end
-
-    def campo(nome, valor = nil, opcoes = {})
-      self.arquivo_info.secao_atual.campos << CampoInfo.new(nome, valor, opcoes)
-    end
-
-    def indice
-      self.arquivo_info.indice
-    end
-  end
-
-  module InstanceMethods
-    def gerar_arquivo_texto
-      info = self.class.arquivo_info
-
-      nome_arquivo = case info.nome
-        when Symbol: send(info.nome)
-        when String: info.nome
-      end
-
-      File.open(nome_arquivo, 'w') do |file|
-        for secao in info.secoes
-          if self.respond_to? secao.nome
-            objetos = self.send(secao.nome)
-            objetos = [objetos] if objetos.nil? or !objetos.is_a?(Array)
-          else
-            objetos = [self]
-          end
-
-          info.secao_atual = secao
-
-          objetos.each_with_index do |objeto, index|
-            info.indice = index
-            file.puts secao.linha(objeto)
-          end
-        end
-      end
-
-      nome_arquivo
-    end
-  end
-
-  class ArquivoInfo
-    attr_accessor :nome, :secoes, :secao_atual, :indice
-    def initialize(nome)
-      @nome = nome
-      @secoes = []
-    end
-  end
-
-
-  # campo :metodo
-  # campo :nome, 'alor'
-  # campo :metodo, :alinhamento => :esquerda, :tamanho => 10
-  class CampoInfo
-    attr_accessor :nome, :valor, :opcoes
-    def initialize(nome, valor = nil, opcoes = {})
-      @nome = nome
-      if valor.is_a? Hash
-        @valor = nil
-        @opcoes = valor
+      if self.objeto.respond_to? nome
+        objetos = self.objeto.send nome
+        objetos = [objetos] if objetos.nil? or !objetos.is_a?(Array)
       else
-        @valor = valor
-        @opcoes = opcoes
+        objetos = [objeto]
+      end
+
+      objetos.each_with_index do |objeto, index|
+        self.objeto = objeto
+        self.indice = index
+        bloco.call objeto
+        nova_linha
+      end
+
+      self.objeto = self.bloco.binding.eval "self"
+    end
+
+    def nova_linha
+      self.linha = ''
+      self.numero_linha += 1
+      self.file.print "\n"
+    end
+
+    def imprimir(*args)
+      campo = Campo.new(*args)
+      valor_campo = campo.valor_para(objeto)
+
+      posicao = campo.posicao
+      if posicao
+        valor_campo = valor_campo.rjust(posicao - self.linha.size + 1)
+      end
+
+      self.linha << valor_campo
+      self.file.print valor_campo
+    end
+  end
+
+  # campo :nome
+  # campo :profisao, 'Programador'
+  # campo :idade, 46, :posicao => 12
+  # campo :tentativas, :alinhamento => :esquerda, :tamanho => 10
+  # campo :salario, :formato => :decimal
+  # campo 'FIM'
+  class Campo
+    attr_accessor :nome, :valor, :opcoes
+    def initialize(*args)
+      @opcoes = (args.last.is_a?(Hash) ? args.pop : {})
+
+      if args.first.is_a? Symbol
+        @nome = args.first
+        @valor = args[1]
+      else
+        @valor = args.first
       end
     end
 
     def valor_para(objeto)
-      valor = if vazio?
-        ' ' * self.valor
-      elsif self.valor
-        self.valor
-      else
+      valor = if chamar_metodo?
         begin
-          objeto.send(nome) 
+          objeto.send(self.nome) 
         rescue Exception => e
-          raise "Erro ao chamar #{nome} em #{objeto}: #{e.message}"
+          raise "Erro ao chamar #{self.nome.inspect} em #{objeto}: #{e.message}"
         end
+      else
+        self.valor
       end
 
       formatar(valor)
     end
 
+    def posicao
+      opcoes[:posicao]
+    end
     private
-    def vazio?
-      nome == :vazio
+    def chamar_metodo?
+      (self.nome && self.valor.nil?)
     end
     def formatar(valor)
-      if valor.is_a? Float 
-        string = ('%.2f' % valor).gsub('.','')
+       string = valor.to_s
+      if opcoes[:formato]
+        string = Caligrafo.formatos[opcoes[:formato]].call valor
       else
-        string = valor.to_s
-      end
-
-      if tamanho = opcoes[:tamanho]
-        if [Fixnum, Float].include? valor.class
-          opcoes[:alinhamento]   ||= :direita
-          opcoes[:preenchimento] ||= '0'
+        if valor.is_a? Float 
+          string = ('%.2f' % valor).gsub('.','')
         else
-          opcoes[:alinhamento]   ||= :esquerda
-          opcoes[:preenchimento] ||= ' '
+          string = valor.to_s
         end
-        alinhamento = opcoes[:alinhamento]
-        preenchimento = opcoes[:preenchimento]
-
-        if opcoes[:alinhamento] == :direita
-          string = string.rjust tamanho, preenchimento
-        else
-          string = string.ljust tamanho, preenchimento
+  
+        if tamanho = opcoes[:tamanho]
+          if [Fixnum, Float].include? valor.class
+            opcoes[:alinhamento]   ||= :direita
+            opcoes[:preenchimento] ||= '0'
+          else
+            opcoes[:alinhamento]   ||= :esquerda
+            opcoes[:preenchimento] ||= ' '
+          end
+          alinhamento = opcoes[:alinhamento]
+          preenchimento = opcoes[:preenchimento]
+  
+          if opcoes[:alinhamento] == :direita
+            string = string.rjust tamanho, preenchimento
+          else
+            string = string.ljust tamanho, preenchimento
+          end
+  
+          string = string[0..(tamanho - 1)] if string.size > tamanho
         end
-
-        string = string[0..(tamanho - 1)] if string.size > tamanho
       end
 
       string
     end
   end
+end
 
-  class SecaoInfo
-    attr_accessor :nome, :bloco, :campos
-    def initialize(nome, bloco)
-      @nome = nome
-      @bloco = bloco
-      @campos = []
-    end
-    def linha(objeto)
-      self.campos.clear
-      bloco.call objeto
-      self.campos.collect {|campo| campo.valor_para(objeto) }.join
-    end
+# TODO criar arquivo de extensoes.
+class ::Fixnum
+  def espacos
+    ' ' * self
   end
 end
 
