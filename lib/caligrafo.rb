@@ -13,20 +13,74 @@ module Caligrafo
     end
   end
 
-  @@formatos = {
-    :decimal => Proc.new do |valor|
-       ('%.2f' % valor).gsub('.','')
-    end 
-  }
-
-  def self.formatos
-    @@formatos
-  end
-
-  def self.formato(nome, &bloco)
-    @@formatos[nome] = bloco
-  end
+  module Formatador
+    def self.formatos
+      @@formatos
+    end
   
+    def self.registrar(nome, formatador)
+      @@formatos ||= {}
+      @@formatos[nome] = formatador.new
+    end
+
+    def self.pesquisar(tipo)
+      formatador = @@formatos.values.find { |f| f.tipos.include? tipo }
+      formatador ||= @@formatos[:default]
+    end
+
+    class Base
+      attr_reader :tipos, :alinhamento, :preenchimento
+
+      def initialize
+        @tipos = []
+        @alinhamento = :esquerda
+        @preenchimento = ' '
+      end
+
+      def formatar(valor, opcoes = {})
+        valor.to_s
+      end
+
+      def preencher(string, tamanho)
+        if self.alinhamento == :direita
+          string = string.rjust tamanho, self.preenchimento
+        else
+          string = string.ljust tamanho, self.preenchimento
+        end
+ 
+        string = string[0..(tamanho - 1)] if string.size > tamanho
+        string
+      end
+    end
+
+    class Numerico < Base
+      def initialize
+        @tipos = [Fixnum]
+      end
+
+      def alinhamento
+        :direita
+      end
+
+      def preenchimento
+        '0'
+      end
+    end
+
+    class Decimal < Numerico
+      def initialize
+         @tipos = [Float]
+      end
+
+      def formatar(valor, opcoes = {})
+         ('%.2f' % valor).gsub('.','')
+      end
+    end
+
+    self.registrar :default, Base
+    self.registrar :numerico, Numerico
+    self.registrar :decimal, Decimal
+  end
 
   class Arquivo
     attr_reader   :nome, :bloco
@@ -99,9 +153,14 @@ module Caligrafo
   # campo :salario, :formato => :decimal
   # campo 'FIM'
   class Campo
-    attr_accessor :nome, :valor, :opcoes
+    attr_accessor :nome, :valor, :posicao, :formato, :tamanho, :opcoes_para_formatador
+
     def initialize(*args)
-      @opcoes = (args.last.is_a?(Hash) ? args.pop : {})
+      opcoes = (args.last.is_a?(Hash) ? args.pop : {})
+      @formato = opcoes.delete(:formato)
+      @posicao = opcoes.delete(:posicao)
+      @tamanho = opcoes.delete(:tamanho)
+      @opcoes_para_formatador = opcoes
 
       if args.first.is_a? Symbol
         @nome = args.first
@@ -125,45 +184,19 @@ module Caligrafo
       formatar(valor)
     end
 
-    def posicao
-      opcoes[:posicao]
-    end
     private
     def chamar_metodo?
       (self.nome && self.valor.nil?)
     end
     def formatar(valor)
-       string = valor.to_s
-      if opcoes[:formato]
-        string = Caligrafo.formatos[opcoes[:formato]].call valor
+      if self.formato
+        formatador = Caligrafo::Formatador.formatos[self.formato]
       else
-        if valor.is_a? Float 
-          string = ('%.2f' % valor).gsub('.','')
-        else
-          string = valor.to_s
-        end
-  
-        if tamanho = opcoes[:tamanho]
-          if [Fixnum, Float].include? valor.class
-            opcoes[:alinhamento]   ||= :direita
-            opcoes[:preenchimento] ||= '0'
-          else
-            opcoes[:alinhamento]   ||= :esquerda
-            opcoes[:preenchimento] ||= ' '
-          end
-          alinhamento = opcoes[:alinhamento]
-          preenchimento = opcoes[:preenchimento]
-  
-          if opcoes[:alinhamento] == :direita
-            string = string.rjust tamanho, preenchimento
-          else
-            string = string.ljust tamanho, preenchimento
-          end
-  
-          string = string[0..(tamanho - 1)] if string.size > tamanho
-        end
+        formatador = Formatador.pesquisar valor.class 
       end
 
+      string = formatador.formatar(valor, self.opcoes_para_formatador)
+      string = formatador.preencher(string, self.tamanho) if self.tamanho
       string
     end
   end

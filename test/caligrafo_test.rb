@@ -2,13 +2,17 @@ require 'test_helper'
 require 'caligrafo'
 require 'ostruct'
 
+class Telefone < Caligrafo::Formatador::Base
+  def formatar(valor, opcoes={})
+    valor.gsub(/(\d\d)(\d\d)(\d\d\d\d)(\d\d\d\d)/,'\1 \2 \3-\4') 
+  end
+end
+Caligrafo::Formatador.registrar :fone, Telefone
+
 class Portifolio < OpenStruct
   include Caligrafo
 
   def gerar_arquivo(nome_arquivo)
-    Caligrafo.formato :fone do |v| 
-      v.gsub(/(\d\d)(\d\d)(\d\d\d\d)(\d\d\d\d)/,'\1 \2 \3-\4')
-    end
 
     criar_arquivo nome_arquivo do
       secao :cabecalho do
