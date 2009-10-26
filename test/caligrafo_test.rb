@@ -48,6 +48,7 @@ class CaligrafoTest < Test::Unit::TestCase
   def setup
     @target = 'test/arquivo_gerado.txt'
   end
+
   def teardown
     File.delete @target rescue nil 
   end
@@ -74,5 +75,14 @@ FIM                                                                             
     end
 
     assert_equal_files nome_arquivo_esperado, @target
+  end
+
+  def test_pesquisar_formatador_inexistente
+    assert_raise Caligrafo::Formatador::FormatadorNaoEncontrado do
+      Caligrafo::Formatador.pesquisar_por_nome! :bolinha
+    end
+    assert_nothing_raised do
+      Caligrafo::Formatador.pesquisar_por_nome! :numerico
+    end
   end
 end

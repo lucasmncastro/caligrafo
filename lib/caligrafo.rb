@@ -14,19 +14,28 @@ module Caligrafo
   end
 
   module Formatador
-    def self.formatos
-      @@formatos
+    def self.formatadores
+      @@formatadores ||= {}
     end
   
     def self.registrar(nome, formatador)
-      @@formatos ||= {}
-      @@formatos[nome] = formatador.new
+      self.formatadores[nome] = formatador.new
     end
 
-    def self.pesquisar(tipo)
-      formatador = @@formatos.values.find { |f| f.tipos.include? tipo }
-      formatador ||= @@formatos[:default]
+    def self.pesquisar_por_nome(nome)
+      self.formatadores[nome]
     end
+
+    def self.pesquisar_por_nome!(nome)
+      self.pesquisar_por_nome(nome) or raise FormatadorNaoEncontrado, "O formatador #{nome.inspect} nao foi registrado!"
+    end
+
+    def self.pesquisar_por_tipo(tipo)
+      formatador   = self.formatadores.values.find { |f| f.tipos.include? tipo }
+      formatador ||= self.formatadores[:default]
+    end
+
+    class FormatadorNaoEncontrado < Exception; end
 
     class Base
       attr_reader :tipos, :alinhamento, :preenchimento
@@ -50,6 +59,15 @@ module Caligrafo
  
         string = string[0..(tamanho - 1)] if string.size > tamanho
         string
+      end
+    end
+
+    class Data < Base
+      def tipos
+        [Date]
+      end
+      def formatar(valor, opcoes={})
+        valor.strftime('%Y%m%d')
       end
     end
 
@@ -77,9 +95,11 @@ module Caligrafo
       end
     end
 
-    self.registrar :default, Base
+    self.registrar :default,  Base
+    self.registrar :alpha,    Base
     self.registrar :numerico, Numerico
-    self.registrar :decimal, Decimal
+    self.registrar :decimal,  Decimal
+    self.registrar :data,     Caligrafo::Formatador::Data
   end
 
   class Arquivo
@@ -190,9 +210,9 @@ module Caligrafo
     end
     def formatar(valor)
       if self.formato
-        formatador = Caligrafo::Formatador.formatos[self.formato]
+        formatador = Formatador.pesquisar_por_nome self.formato
       else
-        formatador = Formatador.pesquisar valor.class 
+        formatador = Formatador.pesquisar_por_tipo valor.class 
       end
 
       string = formatador.formatar(valor, self.opcoes_para_formatador)
