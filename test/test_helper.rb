@@ -17,20 +17,22 @@ class Test::Unit::TestCase
     expected = File.new(expected, 'r') if expected.is_a? String
     given    = File.new(given, 'r')    if given.is_a? String
 
-    expected_text = expected.read
-    given_text    = given.read
+    assert_file_content given, expected.read
+  end
 
-    lines_of_given_text = given_text.lines.to_a
-  
-    expected_text.each_with_index do |line, index|
+  def assert_file_content(file, content)
+    given = File.new(file, 'r') if file.is_a? String
+    lines_of_given_text = given.read.lines.to_a
+    
+    content.each_with_index do |line, index|
       begin
         assert_equal line, lines_of_given_text[index]
       rescue Test::Unit::AssertionFailedError => e
         column = Diff::LCS.diff(line, lines_of_given_text[index]).first.first.position + 1
         raise Test::Unit::AssertionFailedError, "Line #{index + 1} dont match on column #{column}:\n#{e.message}"
       end
-      if expected_text.to_a.size < given_text.to_a.size
-        assert_equal expected_text, given_text 
+      if content.to_a.size < given.read.to_a.size
+        assert_equal content, given.read
       end
     end
   end
