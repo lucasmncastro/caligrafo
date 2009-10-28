@@ -2,6 +2,7 @@ module Caligrafo
   def self.included(base)
     base.instance_eval do
       include InstanceMethods
+      extend  ClassMethods
     end
   end
 
@@ -10,6 +11,175 @@ module Caligrafo
       arquivo = Arquivo.new(nome_arquivo, bloco)
       arquivo.criar_arquivo
       nome_arquivo    
+    end
+
+    def ler_arquivo(nome, &bloco)
+      estrutura = self.class.instance_variable_get "@arquivo"
+      raise 'A estrutura nao foi definida' if estrutura.nil?
+
+      File.open(nome, 'r') do |file|
+        while linha = file.gets
+          linha.extend LinhaArquivo
+
+          linha.arquivo = estrutura
+          linha.descobrir_secao
+
+          bloco.call linha
+        end
+      end
+    end
+  end
+
+  module LinhaArquivo
+    def arquivo=(arquivo)
+      @arquivo = arquivo
+    end
+
+    def secao
+      if @secao
+        @secao.nome
+      end
+    end
+     
+    def secao?(nome_secao)
+      @arquivo.secoes.find {|s| s.nome == nome_secao }
+    end
+
+    def ler(nome_campo)
+      if @secao
+        campo = @secao.campos.find {|c| c.nome == nome_campo }
+        campo.extrair_valor(self) if campo
+      end
+    end
+
+    def ler_campos
+      if @secao
+        hash = {}
+        @secao.campos.collect {|c| hash[c.nome] = c.extrair_valor(self) }
+        hash
+      end
+    end
+
+    def descobrir_secao
+      @secao = @arquivo.secoes.find {|s| s.dessa_linha?(self) }
+    end
+  end
+
+  module Helpers
+    def executar(bloco)
+      self.class.send :define_method, :executar_bloco, &bloco
+      self.executar_bloco
+    end
+
+    def extrair_opcoes(args)
+      args.last.is_a?(Hash) ? args.pop : {}
+    end
+  end
+
+  module ClassMethods
+
+    def arquivo(&bloco)
+      @arquivo = Arquivo.new
+      @arquivo.executar bloco
+    end
+
+    class Arquivo
+      include Caligrafo::Helpers
+
+      attr_accessor :bloco
+
+      def secoes
+        @secoes ||= []
+      end
+
+      def secao(nome, &bloco)
+        secao = Secao.new(nome, bloco)
+        secoes << secao
+        secao.executar bloco
+      end
+    end
+
+    class Secao
+      include Caligrafo::Helpers
+
+      attr_accessor :nome, :bloco
+
+      def initialize(nome, bloco)
+        @nome = nome
+        @bloco = bloco
+      end
+
+      def campos
+        @campos ||= []
+      end
+
+      def campo(nome, *opcoes)
+        campo = Campo.new(self, nome, *opcoes)
+        self.campos << campo
+        campo
+      end
+
+      def dessa_linha?(linha)
+        linha =~ /^#{campos.first.valor_padrao}/
+      end
+    end
+
+    class Campo
+      include Caligrafo::Helpers
+
+      attr_accessor :secao, :nome, :inicio, :fim, :formatador, :valor_padrao
+
+      def initialize(secao, nome, *args)
+        self.secao = secao
+        self.nome = nome
+       
+        opcoes = extrair_opcoes(args)
+        self.inicio     = opcoes.delete(:inicio)
+        self.fim        = opcoes.delete(:fim)
+        self.formatador = Formatador.pesquisar_por_nome(opcoes.delete(:formato))
+
+        if args.first
+          self.valor_padrao = args.first
+          opcoes[:tamanho]  = self.valor_padrao.to_s.size
+        end
+
+        if opcoes.key? :posicao
+          posicao = opcoes.delete(:posicao)
+          self.inicio = posicao.first
+          self.fim    = posicao.last
+        else
+          ajustar_inicio_e_fim(opcoes.delete(:tamanho))
+        end
+      end
+
+      def tamanho
+        if self.fim and self.inicio
+          self.fim - self.inicio + 1 # Inclui o ultimo elemento
+        else
+          nil
+        end
+      end
+
+      def extrair_valor(linha)
+        fim = self.fim || 0
+        linha[(self.inicio - 1)..(fim - 1)]
+      end
+
+      private
+      def ajustar_inicio_e_fim(tamanho)
+        self.inicio ||= calcular_inicio
+        self.fim    ||= self.inicio + tamanho - 1 if tamanho
+      end
+
+      def calcular_inicio
+        campo_anterior = self.secao.campos.last
+        if campo_anterior
+          ultima_posicao = campo_anterior.fim
+          ultima_posicao + 1
+        else
+          1
+        end
+      end
     end
   end
 
@@ -66,6 +236,7 @@ module Caligrafo
       def tipos
         [Date]
       end
+
       def formatar(valor, opcoes={})
         valor.strftime('%Y%m%d')
       end
@@ -227,5 +398,6 @@ class ::Fixnum
   def espacos
     ' ' * self
   end
+  alias espaco espacos
 end
 
