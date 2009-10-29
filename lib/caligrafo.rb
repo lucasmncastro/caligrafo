@@ -13,14 +13,30 @@ module Caligrafo
       nome_arquivo    
     end
 
+    def escrever_arquivo(nome, &bloco)
+      estrutura = self.class.instance_variable_get "@arquivo"
+       
+      File.open(nome, 'w') do |file|
+        file.extend ArquivoExtensao
+        file.estrutura = estrutura
+        file.linha = ''
+        file.numero_linha = 1
+        file.objeto = self
+        file.bloco = bloco
+
+        bloco.call file
+      end
+
+      nome
+    end
+
     def ler_arquivo(nome, &bloco)
       estrutura = self.class.instance_variable_get "@arquivo"
       raise 'A estrutura nao foi definida' if estrutura.nil?
 
       File.open(nome, 'r') do |file|
         while linha = file.gets
-          linha.extend LinhaArquivo
-
+          linha.extend LinhaArquivoExtensao
           linha.arquivo = estrutura
           linha.descobrir_secao
 
@@ -30,10 +46,50 @@ module Caligrafo
     end
   end
 
-  module LinhaArquivo
-    def arquivo=(arquivo)
-      @arquivo = arquivo
+  module ArquivoExtensao
+    attr_accessor :objeto, :indice, :linha, :numero_linha, :bloco, :estrutura
+
+    def secao(nome, &bloco)
+      if self.objeto.respond_to? nome
+        objetos = self.objeto.send nome
+        objetos = [objetos] if objetos.nil? or !objetos.is_a?(Array)
+      else
+        objetos = [objeto]
+      end
+
+      objetos.each_with_index do |objeto, index|
+        self.objeto = objeto
+        self.indice = index
+
+        bloco.call objeto
+        nova_linha
+      end
+
+      self.objeto = self.bloco.binding.eval "self"
     end
+
+    def nova_linha
+      self.linha = ''
+      self.numero_linha += 1
+      self.print "\n"
+    end
+
+    def imprimir(*args)
+      campo = Campo.new(*args)
+      valor_campo = campo.valor_para(objeto)
+
+      posicao = campo.posicao
+      if posicao
+        valor_campo = valor_campo.rjust(posicao - self.linha.size + 1)
+      end
+
+      self.linha << valor_campo
+      self.print valor_campo
+    end
+  end
+
+  module LinhaArquivoExtensao
+    attr_accessor :arquivo
 
     def secao
       if @secao
@@ -48,14 +104,14 @@ module Caligrafo
     def ler(nome_campo)
       if @secao
         campo = @secao.campos.find {|c| c.nome == nome_campo }
-        campo.extrair_valor(self) if campo
+        campo.ler(self) if campo
       end
     end
 
     def ler_campos
       if @secao
         hash = {}
-        @secao.campos.collect {|c| hash[c.nome] = c.extrair_valor(self) }
+        @secao.campos.each {|c| hash[c.nome] = c.ler(self) }
         hash
       end
     end
@@ -160,7 +216,7 @@ module Caligrafo
         end
       end
 
-      def extrair_valor(linha)
+      def ler(linha)
         fim = self.fim || 0
         linha[(self.inicio - 1)..(fim - 1)]
       end
