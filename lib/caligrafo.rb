@@ -65,7 +65,7 @@ module Caligrafo
         nova_linha
       end
 
-      self.objeto = self.bloco.binding.eval "self"
+      self.objeto = self.bloco.binding.send :eval, "self"
     end
 
     def nova_linha
@@ -345,7 +345,7 @@ module Caligrafo
       # não estariam disponíveis. ;)
       self.class.send :define_method, :executar_bloco, &bloco 
 
-      self.objeto = bloco.binding.eval "self"
+      self.objeto = bloco.binding.send :eval, "self"
 
       File.open(nome, 'w') do |file|
         self.file = file
@@ -370,7 +370,7 @@ module Caligrafo
         nova_linha
       end
 
-      self.objeto = self.bloco.binding.eval "self"
+      self.objeto = self.bloco.binding.send :eval, "self"
     end
 
     def nova_linha
