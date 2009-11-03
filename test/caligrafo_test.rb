@@ -26,7 +26,7 @@ class Portifolio < OpenStruct
 
       f.secao :sites do |site|                         
         f.imprimir :downcase                      # Podemos chamar o método do item nas seções.
-        f.imprimir f.numero_linha, :posicao => 100
+        f.imprimir :numero_linha, f.numero_linha, :posicao => 100
       end
 
       f.secao :rodape do 

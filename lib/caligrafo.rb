@@ -412,6 +412,7 @@ module Caligrafo
       if args.first.is_a? Symbol
         @nome = args.first
         @valor = args[1]
+        @chamar_metodo = true if args.size == 1
       else
         @valor = args.first
       end
@@ -433,7 +434,7 @@ module Caligrafo
 
     private
     def chamar_metodo?
-      (self.nome && self.valor.nil?)
+      @chamar_metodo
     end
     def formatar(valor)
       if self.formato
