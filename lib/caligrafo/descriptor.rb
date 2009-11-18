@@ -76,7 +76,7 @@ module Caligrafo
         opcoes = extrair_opcoes(args)
         self.inicio     = opcoes.delete(:inicio)
         self.fim        = opcoes.delete(:fim)
-        self.formatador = Formatador.pesquisar_por_nome(opcoes.delete(:formato))
+        self.formatador = Converter.pesquisar_por_nome(opcoes.delete(:formato))
 
         valor_padrao = args.first
         if valor_padrao
@@ -143,11 +143,8 @@ module Caligrafo
       end
       
       def formatar(valor)
-        if self.formatador
-          formatador = self.formatador
-        else
-          formatador = Formatador.pesquisar_por_tipo valor.class 
-        end        
+        formatador = self.formatador
+        formatador ||= Converter.pesquisar_por_tipo valor.class 
 
         string = formatador.formatar(valor, {})
         string = formatador.preencher(string, self.tamanho) if self.tamanho

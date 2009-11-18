@@ -1,13 +1,13 @@
 require 'caligrafo'
 require 'ostruct'
 
-class Telefone < Caligrafo::Formatador::Base
+class Telefone < Caligrafo::Converter::Base
   def formatar(valor, opcoes={})
     valor.to_s.gsub(/(\d\d)(\d\d)(\d\d\d\d)(\d\d\d\d)/,'\1 \2 \3-\4')
   end
 end
 
-Caligrafo::Formatador.registrar :fone, Telefone
+Caligrafo::Converter.registrar :fone, Telefone
 
 class Portifolio < OpenStruct
   include Caligrafo

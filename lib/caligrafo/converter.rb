@@ -1,5 +1,5 @@
 module Caligrafo
-  module Formatador
+  module Converter
     def self.formatadores
       @@formatadores ||= {}
     end
@@ -14,7 +14,7 @@ module Caligrafo
 
     def self.pesquisar_por_nome!(nome)
       resultado = self.pesquisar_por_nome(nome) 
-      raise FormatadorNaoEncontrado, "O formatador #{nome.inspect} nao foi registrado!" unless resultado
+      raise ConverterNotFound, "O formatador #{nome.inspect} nao foi registrado!" unless resultado
       resultado
     end
 
@@ -23,7 +23,7 @@ module Caligrafo
       formatador ||= self.formatadores[:default]
     end
 
-    class FormatadorNaoEncontrado < Exception; end
+    class ConverterNotFound < Exception; end
 
     class Base
       attr_reader :tipos, :alinhamento, :preenchimento

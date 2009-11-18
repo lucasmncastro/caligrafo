@@ -5,7 +5,7 @@ require 'caligrafo'
 class FormatadorTest < Test::Unit::TestCase
 
   def test_formatador_default
-    test_formatador Caligrafo::Formatador::Base, 12, 10, '12        ' 
+    test_formatador Caligrafo::Converter::Base, 12, 10, '12        ' 
   end
 
   def test_formatador_personalizado
@@ -13,12 +13,12 @@ class FormatadorTest < Test::Unit::TestCase
   end
 
   def test_pesquisar_formatador_inexistente
-    assert_raise Caligrafo::Formatador::FormatadorNaoEncontrado do
-      Caligrafo::Formatador.pesquisar_por_nome! :bolinha
+    assert_raise Caligrafo::Converter::ConverterNotFound do
+      Caligrafo::Converter.pesquisar_por_nome! :bolinha
     end
 
     assert_nothing_raised do
-      Caligrafo::Formatador.pesquisar_por_nome! :numerico
+      Caligrafo::Converter.pesquisar_por_nome! :numerico
     end
   end
 

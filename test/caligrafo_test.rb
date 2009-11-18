@@ -2,10 +2,6 @@ require 'test_helper'
 require 'example'
 
 class CaligrafoTest < Test::Unit::TestCase
-  def test_description
-    
-  end
-
 
   def test_writing
     pessoa = Portifolio.new :nome => 'Lucas da Silva', 
@@ -39,6 +35,5 @@ class CaligrafoTest < Test::Unit::TestCase
     campos = cabecalho.campos
     assert_equal 6, campos.size
   end
-
 
 end
