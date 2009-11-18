@@ -32,6 +32,13 @@ class CaligrafoTest < Test::Unit::TestCase
     assert 7, counter
   end
 
+  def test_ler_da_classe
+    Portifolio.ler_arquivo 'test/example.txt' do |linha|
+      assert true
+      break
+    end
+  end
+
   def test_secao
     @portifolio.ler_arquivo 'test/example.txt' do |linha|
       nome_secao = case linha.numero

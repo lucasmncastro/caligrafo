@@ -1,6 +1,5 @@
-*.sw?
-.DS_Store
 coverage
 rdoc
 pkg
-test/*.txt
+test/arquivo_gerado.txt
+test/tmp.txt

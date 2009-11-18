@@ -11,6 +11,7 @@ module Caligrafo
 
   def self.included(base)
     base.extend Descriptor
+    base.extend Reader
   end
 end
 
