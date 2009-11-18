@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{caligrafo}
-  s.version = "0.1.3"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Lucas de Castro"]
-  s.date = %q{2009-11-03}
+  s.date = %q{2009-11-18}
   s.description = %q{DSL para geração de arquivos texto.}
   s.email = %q{castro.lucas@gmail.com}
   s.extra_rdoc_files = [
@@ -25,9 +25,14 @@ Gem::Specification.new do |s|
      "VERSION",
      "caligrafo.gemspec",
      "lib/caligrafo.rb",
+     "lib/caligrafo/converter.rb",
+     "lib/caligrafo/descriptor.rb",
+     "lib/caligrafo/fixnum.rb",
+     "lib/caligrafo/reader.rb",
+     "lib/caligrafo/writer.rb",
      "test/caligrafo_test.rb",
+     "test/example.rb",
      "test/formatador_test.rb",
-     "test/leitura_test.rb",
      "test/test_helper.rb"
   ]
   s.homepage = %q{http://github.com/lucasdecastro/caligrafo}
@@ -36,10 +41,10 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{DSL para geração de arquivos texto.}
   s.test_files = [
-    "test/test_helper.rb",
+    "test/formatador_test.rb",
+     "test/test_helper.rb",
      "test/caligrafo_test.rb",
-     "test/formatador_test.rb",
-     "test/leitura_test.rb"
+     "test/example.rb"
   ]
 
   if s.respond_to? :specification_version then
