@@ -26,7 +26,7 @@ class FormatadorTest < Test::Unit::TestCase
   def test_formatador(formatador, valor_original, tamanho, valor_esperado)
     f = formatador.new
 
-    valor_formatado  = f.formatar valor_original
+    valor_formatado  = f.value_to_string valor_original
     valor_preenchido = f.preencher valor_formatado, tamanho
     assert_equal valor_esperado, valor_preenchido
   end

@@ -34,8 +34,12 @@ module Caligrafo
         @preenchimento = ' '
       end
 
-      def formatar(valor, opcoes = {})
+      def value_to_string(valor)
         valor.to_s
+      end
+
+      def string_to_value(string)
+        string.strip
       end
 
       def preencher(string, tamanho)
@@ -55,14 +59,22 @@ module Caligrafo
         [Date]
       end
 
-      def formatar(valor, opcoes={})
+      def value_to_string(valor)
         valor.strftime('%Y%m%d')
+      end
+
+      def string_to_value(string)
+        Date.strptime string, '%Y%m%d'
       end
     end
 
     class Numerico < Base
       def initialize
         @tipos = [Fixnum]
+      end
+
+      def string_to_value(string)
+        string.to_i
       end
 
       def alinhamento
@@ -79,7 +91,7 @@ module Caligrafo
          @tipos = [Float]
       end
 
-      def formatar(valor, opcoes = {})
+      def value_to_string(valor)
          ('%.2f' % valor).gsub('.','')
       end
     end

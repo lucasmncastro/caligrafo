@@ -2,7 +2,7 @@ require 'caligrafo'
 require 'ostruct'
 
 class Telefone < Caligrafo::Converter::Base
-  def formatar(valor, opcoes={})
+  def value_to_string(valor)
     valor.to_s.gsub(/(\d\d)(\d\d)(\d\d\d\d)(\d\d\d\d)/,'\1 \2 \3-\4')
   end
 end
@@ -16,7 +16,7 @@ class Portifolio < OpenStruct
     secao :cabecalho do
       campo :tipo,      '01'
       campo :nome,      :tamanho => 50
-      campo :idade,     :tamanho => 3
+      campo :idade,     :tamanho => 3, :formato => :numerico
       campo :salario,   :tamanho => 7
       campo :vazio,     7.espacos
       campo :linha
@@ -57,5 +57,6 @@ class Portifolio < OpenStruct
       end
     end
   end
+
 end
 

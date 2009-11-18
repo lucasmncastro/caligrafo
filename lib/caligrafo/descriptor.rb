@@ -113,7 +113,13 @@ module Caligrafo
 
       def ler(linha)
         fim = self.fim || 0
-        linha[(self.inicio - 1)..(fim - 1)]
+        substring = linha[(self.inicio - 1)..(fim - 1)]
+
+        if formatador
+          formatador.string_to_value substring
+        else
+          Converter.formatadores[:default].string_to_value substring
+        end
       end
       
       def guarda_valor_para(objeto, valor)
@@ -146,7 +152,7 @@ module Caligrafo
         formatador = self.formatador
         formatador ||= Converter.pesquisar_por_tipo valor.class 
 
-        string = formatador.formatar(valor, {})
+        string = formatador.value_to_string(valor)
         string = formatador.preencher(string, self.tamanho) if self.tamanho
         string
       end

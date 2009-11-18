@@ -2,15 +2,16 @@ require 'test_helper'
 require 'example'
 
 class CaligrafoTest < Test::Unit::TestCase
+  def setup
+    @portifolio = Portifolio.new :nome => 'Lucas da Silva', 
+                                 :idade => 25, 
+                                 :salario => 90_000.5,
+                                 :telefones => ['558622223333', '558699991234'],
+                                 :sites => ['Google.com', 'Blip.tv', 'SlideShare.net']
+  end
 
   def test_writing
-    pessoa = Portifolio.new :nome => 'Lucas da Silva', 
-                            :idade => 25, 
-                            :salario => 90_000.5,
-                            :telefones => ['558622223333', '558699991234'],
-                            :sites => ['Google.com', 'Blip.tv', 'SlideShare.net']
-
-    pessoa.gerar_arquivo 'test/arquivo_gerado.txt'
+    @portifolio.gerar_arquivo 'test/arquivo_gerado.txt'
     assert_file_content  'test/arquivo_gerado.txt', <<-EOF
 01Lucas da Silva                                    0259000050       1
 02Fone#1: 55 86 2222-3333                                            2
@@ -20,6 +21,44 @@ class CaligrafoTest < Test::Unit::TestCase
 03slideshare.net                                                     6
 04FIM                                                                7
     EOF
+  end
+
+  def test_numero_linha
+    counter = 1
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      assert counter, linha.numero
+      counter += 1
+    end
+    assert 7, counter
+  end
+
+  def test_secao
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      nome_secao = case linha.numero
+        when 1    then :cabecalho
+        when 2..3 then :telefones
+        when 4..6 then :sites
+        when 7    then :rodape
+      end    
+      assert_equal nome_secao, linha.secao, "secao nao eh #{nome_secao.inspect}"
+    end
+  end
+
+  def test_secao?
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      assert linha.secao?(linha.secao)
+    end
+  end
+
+  def test_ler_campo
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      case linha.secao
+      when :cabecalho
+        assert_equal '01',             linha.ler(:tipo)
+        assert_equal 'Lucas da Silva', linha.ler(:nome)
+        assert_equal 25,               linha.ler(:idade)
+      end
+    end
   end
 
   def test_description

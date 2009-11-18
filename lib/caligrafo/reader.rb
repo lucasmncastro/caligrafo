@@ -3,11 +3,12 @@ module Caligrafo
     def ler_arquivo(nome, &bloco)
       raise 'A estrutura nao foi definida' unless self.class.estrutura
 
-      File.open(nomee, 'r') do |file|
+      File.open(nome, 'r') do |file|
         while linha = file.gets
           linha.extend LineExtension
           linha.arquivo = self.class.estrutura
           linha.descobrir_secao
+          linha.numero = file.lineno
 
           bloco.call linha
         end
@@ -15,7 +16,7 @@ module Caligrafo
     end
 
     module LineExtension
-      attr_accessor :arquivo
+      attr_accessor :arquivo, :numero
 
       def secao
         if @secao

@@ -1,4 +1,4 @@
-require 'caligrafo/formatador'
+require 'caligrafo/converter'
 
 module Caligrafo
   module Writer
