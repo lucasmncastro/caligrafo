@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
      "lib/caligrafo/writer.rb",
      "test/caligrafo_test.rb",
      "test/example.rb",
+     "test/example.txt",
      "test/formatador_test.rb",
      "test/test_helper.rb"
   ]
@@ -41,9 +42,9 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{DSL para geração de arquivos texto.}
   s.test_files = [
-    "test/formatador_test.rb",
-     "test/test_helper.rb",
+    "test/test_helper.rb",
      "test/caligrafo_test.rb",
+     "test/formatador_test.rb",
      "test/example.rb"
   ]
 
