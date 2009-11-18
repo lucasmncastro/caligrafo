@@ -1,6 +1,5 @@
 require 'test_helper'
 require 'caligrafo'
-require 'ostruct'
 
 
 class FormatadorTest < Test::Unit::TestCase

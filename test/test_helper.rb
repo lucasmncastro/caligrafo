@@ -28,8 +28,13 @@ class Test::Unit::TestCase
       begin
         assert_equal line, lines_of_given_text[index]
       rescue Test::Unit::AssertionFailedError => e
-        column = Diff::LCS.diff(line, lines_of_given_text[index]).first.first.position + 1
-        raise Test::Unit::AssertionFailedError, "Line #{index + 1} dont match on column #{column}:\n#{e.message}"
+        given = lines_of_given_text[index]
+        if given
+          column = Diff::LCS.diff(line, lines_of_given_text[index]).first.first.position + 1
+          raise Test::Unit::AssertionFailedError, "Line #{index + 1} dont match on column #{column}:\n#{e.message}"
+        else
+          raise Test::Unit::AssertionFailedError, "Line #{index + 1} does not exist." 
+        end
       end
       if content.to_a.size < given.read.to_a.size
         assert_equal content, given.read
