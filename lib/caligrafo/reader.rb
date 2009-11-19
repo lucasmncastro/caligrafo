@@ -20,9 +20,7 @@ module Caligrafo
       attr_accessor :arquivo, :numero
 
       def secao
-        if @secao
-          @secao.nome
-        end
+        @secao.nome
       end
        
       def secao?(nome_secao)
@@ -30,22 +28,29 @@ module Caligrafo
       end
 
       def ler(nome_campo)
-        if @secao
-          campo = @secao.campos.find {|c| c.nome == nome_campo }
-          campo.ler(self) if campo
-        end
+        self.campo(nome_campo).ler(self)
+      end
+
+      def preencher(nome_campo, novo_valor)
+        campo = self.campo(nome_campo)
+        self[campo.intervalo] = campo.formatar(novo_valor)
+        self
       end
 
       def ler_campos
-        if @secao
-          hash = {}
-          @secao.campos.each {|c| hash[c.nome] = c.ler(self) }
-          hash
-        end
+        hash = {}
+        @secao.campos.each {|c| hash[c.nome] = c.ler(self) }
+        hash
       end
 
       def descobrir_secao
         @secao = @arquivo.secoes.find {|s| s.dessa_linha?(self) }
+      end
+
+      def campo(nome_campo)
+        campo = @secao.campos.find {|c| c.nome == nome_campo }
+        raise ArgumentError, "campo com o nome '#{nome_campo}' nao foi encontrado." unless campo
+        campo
       end
     end
   end

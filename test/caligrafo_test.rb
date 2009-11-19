@@ -68,6 +68,17 @@ class CaligrafoTest < Test::Unit::TestCase
     end
   end
 
+  def test_preencher_campo
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      case linha.secao
+      when :cabecalho
+        linha.preencher(:nome, 'Lucas de Castro')
+        assert_equal 'Lucas de Castro', linha.ler(:nome)
+        assert_equal "01Lucas de Castro                                   0259000050       1\n", linha
+      end
+    end
+  end
+
   def test_description
     arquivo = Portifolio.estrutura
     assert arquivo

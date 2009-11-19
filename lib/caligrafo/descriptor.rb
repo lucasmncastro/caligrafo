@@ -111,9 +111,13 @@ module Caligrafo
         end
       end
 
+      def intervalo
+        (self.inicio - 1)..(fim - 1)
+      end
+
       def ler(linha)
         fim = self.fim || 0
-        substring = linha[(self.inicio - 1)..(fim - 1)]
+        substring = linha[self.intervalo]
 
         if formatador
           formatador.string_to_value substring
@@ -142,12 +146,6 @@ module Caligrafo
         raise "Erro ao preencher valor para #{objeto.inspect} no campo #{self.inspect}: #{e.message}"
       end
 
-      private
-      
-      def chamar_metodo?
-        @chamar_metodo
-      end
-      
       def formatar(valor)
         formatador = self.formatador
         formatador ||= Converter.pesquisar_por_tipo valor.class 
@@ -155,6 +153,12 @@ module Caligrafo
         string = formatador.value_to_string(valor)
         string = formatador.preencher(string, self.tamanho) if self.tamanho
         string
+      end
+
+      private
+      
+      def chamar_metodo?
+        @chamar_metodo
       end
 
       def ajustar_inicio_e_fim(tamanho)
