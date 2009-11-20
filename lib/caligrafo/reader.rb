@@ -16,6 +16,26 @@ module Caligrafo
       end
     end
 
+    def criar_arquivo_retorno(arquivo_origem, arquivo_destino, &bloco)
+      estrutura = (self.is_a?(Class) ? self.estrutura : self.class.estrutura)
+      raise 'A estrutura nao foi definida' unless estrutura
+
+      destino = File.new(arquivo_destino, 'w')
+      File.open(arquivo_origem, 'r') do |file|
+        while linha = file.gets
+          linha.extend LineExtension
+          linha.arquivo = estrutura
+          linha.descobrir_secao
+          linha.numero = file.lineno
+
+          bloco.call linha
+
+          destino.print linha
+        end
+      end
+      destino.close
+    end
+
     module LineExtension
       attr_accessor :arquivo, :numero
 
