@@ -80,7 +80,7 @@ class CaligrafoTest < Test::Unit::TestCase
   end
 
   def test_criar_arquivo_retorno
-    Portifolio.criar_arquivo_retorno 'test/example.txt', 'test/retorno.txt' do |linha|
+    Portifolio.ler_arquivo 'test/example.txt', :arquivo_retorno => 'test/retorno.txt' do |linha|
       case linha.secao
       when :cabecalho
         linha.preencher(:nome, 'Lucas de Castro')
@@ -97,6 +97,22 @@ class CaligrafoTest < Test::Unit::TestCase
     EOF
   end
 
+  def test_criar_arquivo_retorno_limitando_secoes
+    Portifolio.ler_arquivo 'test/example.txt', 
+                           :arquivo_retorno => 'test/retorno.txt', 
+                           :secoes_retorno => [:cabecalho, :rodape] do |linha|
+      case linha.secao
+      when :cabecalho
+        linha.preencher :nome, 'Lucas de Castro'
+      when :rodape
+        linha.preencher :linha, linha.numero_retorno
+      end
+    end
+    assert_file_content  'test/retorno.txt', <<-EOF
+01Lucas de Castro                                   0259000050       1
+04FIM                                                                2
+    EOF
+  end
   def test_description
     arquivo = Portifolio.estrutura
     assert arquivo

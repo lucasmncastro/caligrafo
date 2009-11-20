@@ -112,11 +112,11 @@ module Caligrafo
       end
 
       def intervalo
+        fim = self.fim || 0
         (self.inicio - 1)..(fim - 1)
       end
 
       def ler(linha)
-        fim = self.fim || 0
         substring = linha[self.intervalo]
 
         if formatador

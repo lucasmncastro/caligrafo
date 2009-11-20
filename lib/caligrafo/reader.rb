@@ -1,8 +1,15 @@
 module Caligrafo
   module Reader
-    def ler_arquivo(nome, &bloco)
+    def ler_arquivo(nome, opcoes={}, &bloco)
       estrutura = (self.is_a?(Class) ? self.estrutura : self.class.estrutura)
       raise 'A estrutura nao foi definida' unless estrutura
+
+      if output = opcoes.delete(:arquivo_retorno)
+        output_file = File.new(output, 'w')
+        secoes_retorno = opcoes.delete(:secoes_retorno)
+        secoes_retorno ||= estrutura.secoes.collect {|secao| secao.nome }
+        linha_retorno = 1
+      end
 
       File.open(nome, 'r') do |file|
         while linha = file.gets
@@ -10,34 +17,22 @@ module Caligrafo
           linha.arquivo = estrutura
           linha.descobrir_secao
           linha.numero = file.lineno
+          linha.numero_retorno = linha_retorno
 
           bloco.call linha
+          
+          if output and secoes_retorno.include? linha.secao
+            output_file.puts linha.chomp
+            linha_retorno += 1
+          end
         end
       end
-    end
-
-    def criar_arquivo_retorno(arquivo_origem, arquivo_destino, &bloco)
-      estrutura = (self.is_a?(Class) ? self.estrutura : self.class.estrutura)
-      raise 'A estrutura nao foi definida' unless estrutura
-
-      destino = File.new(arquivo_destino, 'w')
-      File.open(arquivo_origem, 'r') do |file|
-        while linha = file.gets
-          linha.extend LineExtension
-          linha.arquivo = estrutura
-          linha.descobrir_secao
-          linha.numero = file.lineno
-
-          bloco.call linha
-
-          destino.print linha
-        end
-      end
-      destino.close
+      
+      output_file.close if output
     end
 
     module LineExtension
-      attr_accessor :arquivo, :numero
+      attr_accessor :arquivo, :numero, :numero_retorno
 
       def secao
         @secao.nome
