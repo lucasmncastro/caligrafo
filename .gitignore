@@ -3,3 +3,4 @@ rdoc
 pkg
 test/arquivo_gerado.txt
 test/tmp.txt
+test/retorno.txt
