@@ -56,6 +56,12 @@ module Caligrafo
         campo
       end
 
+      def size
+        size = 0
+        @campos.each {|field| size += field.tamanho }
+        size
+      end
+
       def dessa_linha?(linha)
         linha =~ /^#{campos.first.valor_padrao}/
       end
@@ -104,11 +110,7 @@ module Caligrafo
       end
 
       def tamanho
-        if self.fim and self.inicio
-          self.fim - self.inicio + 1 # Inclui o ultimo elemento
-        else
-          nil
-        end
+        intervalo.count
       end
 
       def intervalo

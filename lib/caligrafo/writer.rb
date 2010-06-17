@@ -9,7 +9,7 @@ module Caligrafo
         file.extend FileExtension
         file.estrutura = self.class.estrutura
         file.linha = ''
-        file.numero_linha = 1
+        file.numero_linha = 0
         file.objeto = self
         file.bloco = bloco
 
@@ -24,6 +24,7 @@ module Caligrafo
 
       def secao(nome, &bloco)
         self.secao_corrente = self.estrutura.secoes.find {|secao| secao.nome == nome }
+        raise "Seção #{nome.inspect} não encontrada, verifique a descrição do arquivo." unless self.secao_corrente
          
         if self.objeto.respond_to? nome
           objetos = self.objeto.send nome
@@ -36,23 +37,25 @@ module Caligrafo
           self.objeto = objeto
           self.indice = index
 
-          bloco.call objeto
-          if self.estrutura
-            for campo in self.secao_corrente.campos
-              self.print(campo.valor_guardado || campo.valor_para(self.objeto))
-            end
-          end
-          
           nova_linha
+          bloco.call objeto
+          for campo in self.secao_corrente.campos
+            valor = (campo.valor_guardado || campo.valor_para(self.objeto))
+
+            # Só preenche o espaço quando o novo valor não for vazio.
+            # Isso permite que a inicialização da linha inteira não seja sobrescrita com espaços em branco.
+            self.linha[campo.intervalo] = valor if not valor.strip.empty?
+          end
+          self.print self.linha
+          self.print "\n"
         end
 
         self.objeto = self.bloco.binding.send :eval, "self"
       end
 
       def nova_linha
-        self.linha = ''
+        self.linha = ' ' * self.secao_corrente.size
         self.numero_linha += 1
-        self.print "\n"
       end
       
       # Sobrescreve a definição do arquivo.

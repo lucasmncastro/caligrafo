@@ -19,24 +19,24 @@ class Portifolio < OpenStruct
       campo :idade,     :tamanho => 3, :formato => :numerico
       campo :salario,   :tamanho => 7
       campo :vazio,     7.espacos
-      campo :linha
+      campo :linha,     :tamanho => 1
     end
     secao :telefones do
       campo :tipo,      '02'
       campo :descricao, :tamanho => 8
       campo :to_s,      :tamanho => 59, :formato => :fone
-      campo :linha
+      campo :linha,     :tamanho => 1
     end
     secao :sites do
       campo :tipo,      '03'
       campo :downcase,  :tamanho => 67
-      campo :linha
+      campo :linha,     :tamanho => 1
     end
     secao :rodape do
       campo :tipo,      '04'
       campo :fim,       'FIM'
       campo :vazio,     64.espacos
-      campo :linha
+      campo :linha,     :tamanho => 1
     end
   end
 

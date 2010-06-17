@@ -23,10 +23,87 @@ class CaligrafoTest < Test::Unit::TestCase
     EOF
   end
 
+  def test_tamanho_campo
+    cabecalho, telefones, sites, rodape = Portifolio.estrutura.secoes
+
+    tipo, nome,  idade, salario, vazio, linha = cabecalho.campos
+    assert_equal  2, tipo.tamanho
+    assert_equal 50, nome.tamanho
+    assert_equal  3, idade.tamanho
+    assert_equal  7, salario.tamanho
+    assert_equal  1, linha.tamanho
+
+    tipo, descricao, numero, linha = telefones.campos
+    assert_equal  2, tipo.tamanho
+    assert_equal  8, descricao.tamanho
+    assert_equal 59, numero.tamanho
+    assert_equal  1, linha.tamanho
+
+    tipo, site, linha = sites.campos
+    assert_equal  2, tipo.tamanho
+    assert_equal 67, site.tamanho
+    assert_equal  1, linha.tamanho
+
+    tipo, fim, vazio, linha = rodape.campos
+    assert_equal  2, tipo.tamanho
+    assert_equal  3, fim.tamanho
+    assert_equal 64, vazio.tamanho
+    assert_equal  1, linha.tamanho
+  end
+
+  def test_intervalo_campo
+    cabecalho, telefones, sites, rodape = Portifolio.estrutura.secoes
+
+    tipo, descricao, numero, linha = telefones.campos
+    assert_equal 0..1,   tipo.intervalo
+    assert_equal 2..9,   descricao.intervalo
+    assert_equal 10..68, numero.intervalo
+    assert_equal 69..69, linha.intervalo
+  end
+
+  def test_tamanho_secao
+    cabecalho, telefones, sites, rodape = Portifolio.estrutura.secoes
+    assert_equal 70, cabecalho.size
+    assert_equal 70, telefones.size
+    assert_equal 70, sites.size
+    assert_equal 70, rodape.size
+  end
+
+  def test_escrever_arquivo_com_linha_predefinida
+    def @portifolio.gerar_arquivo(nome_arquivo)
+      escrever_arquivo nome_arquivo do |f|
+        f.secao :cabecalho do
+          f.imprimir :linha, f.numero_linha
+        end
+        f.secao :telefones do |t|
+          f.linha = "02                                                                   ?"
+          f.imprimir :descricao, "Fone##{f.indice + 1}: "
+        end
+        f.secao :sites do
+          f.imprimir :linha, f.numero_linha
+        end
+        f.secao :rodape do
+          f.imprimir :linha, f.numero_linha
+        end
+      end
+    end
+
+    @portifolio.gerar_arquivo 'test/arquivo_gerado.txt'
+    assert_file_content  'test/arquivo_gerado.txt', <<-EOF
+01Lucas da Silva                                    0259000050       1
+02Fone#1: 55 86 2222-3333                                            ?
+02Fone#2: 55 86 9999-1234                                            ?
+03google.com                                                         4
+03blip.tv                                                            5
+03slideshare.net                                                     6
+04FIM                                                                7
+    EOF
+  end
+
   def test_numero_linha
     counter = 1
     @portifolio.ler_arquivo 'test/example.txt' do |linha|
-      assert counter, linha.numero
+      assert_equal counter, linha.numero
       counter += 1
     end
     assert 7, counter
@@ -69,6 +146,17 @@ class CaligrafoTest < Test::Unit::TestCase
   end
 
   def test_preencher_campo
+    @portifolio.ler_arquivo 'test/example.txt' do |linha|
+      case linha.secao
+      when :cabecalho
+        linha.preencher(:nome, 'Lucas de Castro')
+        assert_equal 'Lucas de Castro', linha.ler(:nome)
+        assert_equal "01Lucas de Castro                                   0259000050       1\n", linha
+      end
+    end
+  end
+
+  def test_preencher_campo_com_linha_resetada
     @portifolio.ler_arquivo 'test/example.txt' do |linha|
       case linha.secao
       when :cabecalho
