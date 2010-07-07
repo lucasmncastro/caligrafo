@@ -1,3 +1,5 @@
+require 'bigdecimal'
+
 module Caligrafo
   module Converter
     def self.formatadores
@@ -88,11 +90,11 @@ module Caligrafo
 
     class Decimal < Numerico
       def initialize
-         @tipos = [Float]
+         @tipos = [Float, BigDecimal]
       end
 
       def value_to_string(valor)
-         ('%.2f' % valor).gsub('.','')
+         ('%.2f' % valor.to_f).gsub('.','')
       end
     end
 

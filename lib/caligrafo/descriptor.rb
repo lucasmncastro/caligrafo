@@ -145,7 +145,7 @@ module Caligrafo
 
         formatar(valor)
       rescue => e
-        raise "Erro ao preencher valor para #{objeto.inspect} no campo #{self.inspect}: #{e.message}"
+        raise "Erro ao preencher valor para #{objeto.inspect} no campo #{nome} da secao #{secao.nome}: #{e.message}"
       end
 
       def formatar(valor)
