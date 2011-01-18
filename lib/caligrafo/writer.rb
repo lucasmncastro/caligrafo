@@ -61,6 +61,7 @@ module Caligrafo
       # Sobrescreve a definição do arquivo.
       def imprimir(nome_campo, valor)
         campo = self.secao_corrente.campos.find {|campo_pre_definido| campo_pre_definido.nome == nome_campo} 
+        raise ArgumentError, "campo '#{nome_campo}' inexistente na seção '#{self.secao_corrente.nome}'" unless campo
         campo.guarda_valor_para(self.objeto, valor)
       end
     end
