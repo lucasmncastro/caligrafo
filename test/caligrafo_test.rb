@@ -69,6 +69,20 @@ class CaligrafoTest < Test::Unit::TestCase
     assert_equal 70, rodape.size
   end
 
+  def test_imprimir_com_campo_inexistente
+    def @portifolio.gerar_arquivo(nome_arquivo)
+      escrever_arquivo nome_arquivo do |f|
+        f.secao :cabecalho do
+          f.imprimir :esse_campo_nao_existe, 'qualquer bobeira'
+        end
+      end
+    end
+
+    assert_raise ArgumentError do
+      @portifolio.gerar_arquivo 'test/arquivo_gerado.txt'
+    end
+  end
+
   def test_escrever_arquivo_com_linha_predefinida
     def @portifolio.gerar_arquivo(nome_arquivo)
       escrever_arquivo nome_arquivo do |f|
