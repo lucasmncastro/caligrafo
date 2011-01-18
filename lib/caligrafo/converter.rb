@@ -90,11 +90,15 @@ module Caligrafo
 
     class Decimal < Numerico
       def initialize
-         @tipos = [Float, BigDecimal]
+        @tipos = [Float, BigDecimal]
       end
 
       def value_to_string(valor)
-         ('%.2f' % valor.to_f).gsub('.','')
+        ('%.2f' % valor.to_f).gsub('.','')
+      end
+
+      def string_to_value(string)
+        string.gsub(/(.*)(\d{2})/, '\1.\2').to_f
       end
     end
 
