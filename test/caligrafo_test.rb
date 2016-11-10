@@ -115,12 +115,12 @@ class CaligrafoTest < Test::Unit::TestCase
   end
 
   def test_numero_linha
-    counter = 1
+    counter = 0
     @portifolio.ler_arquivo 'test/example.txt' do |linha|
-      assert_equal counter, linha.numero
       counter += 1
+      assert_equal counter, linha.numero
     end
-    assert 7, counter
+    assert_equal 7, counter
   end
 
   def test_ler_da_classe

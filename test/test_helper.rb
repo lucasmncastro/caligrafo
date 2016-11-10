@@ -22,9 +22,9 @@ class Test::Unit::TestCase
 
   def assert_file_content(file, content)
     given = File.new(file, 'r') if file.is_a? String
-    lines_of_given_text = given.read.lines.to_a
+    lines_of_given_text = given.read.lines
     
-    content.each_with_index do |line, index|
+    content.lines.each_with_index do |line, index|
       begin
         assert_equal line, lines_of_given_text[index]
       rescue Test::Unit::AssertionFailedError => e
@@ -36,7 +36,7 @@ class Test::Unit::TestCase
           raise Test::Unit::AssertionFailedError, "Line #{index + 1} does not exist." 
         end
       end
-      if content.to_a.size < given.read.to_a.size
+      if content.lines.size < given.read.lines.size
         assert_equal content, given.read
       end
     end

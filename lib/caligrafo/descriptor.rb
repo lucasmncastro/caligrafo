@@ -95,10 +95,10 @@ module Caligrafo
         if opcoes.key? :posicao
           posicao = opcoes.delete(:posicao)
           case posicao
-          when Range:
+          when Range then
             self.inicio = posicao.first
             self.fim    = posicao.last
-          when Fixnum:
+          when Fixnum then
             self.inicio = calcular_inicio - posicao
             self.fim = self.inicio + posicao
           else
@@ -133,7 +133,7 @@ module Caligrafo
       end
       
       def valor_guardado
-        @valor_guardado
+        @valor_guardado ||= nil
       end
       
       def valor_para(objeto)
