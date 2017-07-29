@@ -11,8 +11,17 @@ module Caligrafo
 
     module Helpers
       def executar(bloco)
+        # We disabled VERBOSE to don't generate "redefined method" warnings.
+        #
+        # In this case, redefine the method is required to the DSL works how
+        # was planned.
+        warn_level = $VERBOSE
+        $VERBOSE = nil
+
         self.class.send :define_method, :executar_bloco, &bloco
         self.executar_bloco
+
+        $VERBOSE = warn_level
       end
 
       def extrair_opcoes(args)

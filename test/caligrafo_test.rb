@@ -52,7 +52,7 @@ class CaligrafoTest < Test::Unit::TestCase
   end
 
   def test_intervalo_campo
-    cabecalho, telefones, sites, rodape = Portifolio.estrutura.secoes
+    _cabecalho, telefones, _sites, _rodape = Portifolio.estrutura.secoes
 
     tipo, descricao, numero, linha = telefones.campos
     assert_equal 0..1,   tipo.intervalo
