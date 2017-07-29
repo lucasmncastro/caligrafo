@@ -56,6 +56,7 @@ module Caligrafo
       end
     end
 
+    require 'date'
     class Data < Base
       def tipos
         [Date]
