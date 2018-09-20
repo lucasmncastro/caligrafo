@@ -1,6 +1,8 @@
 require 'caligrafo/converter'
 
 module Caligrafo
+  WINDOWS_EOL="\r\n"
+
   module Writer
     def escrever_arquivo(nome, &bloco)
       raise 'A estrutura nao foi definida' unless self.class.estrutura
@@ -47,7 +49,7 @@ module Caligrafo
             self.linha[campo.intervalo] = valor if not valor.strip.empty?
           end
           self.print self.linha
-          self.print "\n"
+          self.print Caligrafo::WINDOWS_EOL
         end
 
         self.objeto = self.bloco.binding.send :eval, "self"
