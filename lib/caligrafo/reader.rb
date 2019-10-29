@@ -22,7 +22,8 @@ module Caligrafo
           bloco.call linha
           
           if output and secoes_retorno.include? linha.secao
-            output_file.puts linha.chomp
+            output_file.print linha.chomp
+            output_file.print Caligrafo::WINDOWS_EOL
             linha_retorno += 1
           end
         end

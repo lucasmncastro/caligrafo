@@ -12,7 +12,7 @@ class CaligrafoTest < Test::Unit::TestCase
 
   def test_writing
     @portifolio.gerar_arquivo 'test/arquivo_gerado.txt'
-    assert_file_content  'test/arquivo_gerado.txt', <<-EOF
+    expected = <<-EOF
 01Lucas da Silva                                    0259000050       1
 02Fone#1: 55 86 2222-3333                                            2
 02Fone#2: 55 86 9999-1234                                            3
@@ -21,6 +21,7 @@ class CaligrafoTest < Test::Unit::TestCase
 03slideshare.net                                                     6
 04FIM                                                                7
     EOF
+    assert_file_content  'test/arquivo_gerado.txt', win_eol(expected)
   end
 
   def test_tamanho_campo
@@ -103,7 +104,7 @@ class CaligrafoTest < Test::Unit::TestCase
     end
 
     @portifolio.gerar_arquivo 'test/arquivo_gerado.txt'
-    assert_file_content  'test/arquivo_gerado.txt', <<-EOF
+    expected = <<-EOF
 01Lucas da Silva                                    0259000050       1
 02Fone#1: 55 86 2222-3333                                            ?
 02Fone#2: 55 86 9999-1234                                            ?
@@ -112,6 +113,7 @@ class CaligrafoTest < Test::Unit::TestCase
 03slideshare.net                                                     6
 04FIM                                                                7
     EOF
+    assert_file_content  'test/arquivo_gerado.txt', win_eol(expected)
   end
 
   def test_numero_linha
@@ -188,7 +190,7 @@ class CaligrafoTest < Test::Unit::TestCase
         linha.preencher(:nome, 'Lucas de Castro')
       end
     end
-    assert_file_content  'test/retorno.txt', <<-EOF
+    expected = <<-EOF
 01Lucas de Castro                                   0259000050       1
 02Fone#1: 55 86 2222-3333                                            2
 02Fone#2: 55 86 9999-1234                                            3
@@ -197,6 +199,7 @@ class CaligrafoTest < Test::Unit::TestCase
 03slideshare.net                                                     6
 04FIM                                                                7
     EOF
+    assert_file_content  'test/retorno.txt', win_eol(expected)
   end
 
   def test_criar_arquivo_retorno_limitando_secoes
@@ -210,10 +213,11 @@ class CaligrafoTest < Test::Unit::TestCase
         linha.preencher :linha, linha.numero_retorno
       end
     end
-    assert_file_content  'test/retorno.txt', <<-EOF
+    expected = <<-EOF
 01Lucas de Castro                                   0259000050       1
 04FIM                                                                2
     EOF
+    assert_file_content  'test/retorno.txt', win_eol(expected)
   end
   def test_description
     arquivo = Portifolio.estrutura
@@ -227,6 +231,12 @@ class CaligrafoTest < Test::Unit::TestCase
 
     campos = cabecalho.campos
     assert_equal 6, campos.size
+  end
+
+  private
+
+  def win_eol(string)
+    string.gsub("\n", Caligrafo::WINDOWS_EOL)
   end
 
 end
