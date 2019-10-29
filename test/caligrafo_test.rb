@@ -139,6 +139,17 @@ class CaligrafoTest < Test::Unit::TestCase
         when 2..3 then :telefones
         when 4..6 then :sites
         when 7    then :rodape
+      end
+      assert_equal nome_secao, linha.secao, "secao nao eh #{nome_secao.inspect}"
+    end
+  end
+
+  def test_secao_na_segunda_coluna
+    Exemplo2.ler_arquivo 'test/example_2.txt' do |linha|
+      nome_secao = case linha.numero
+        when 1    then :cabecalho
+        when 2..3 then :corpo
+        when 4    then :rodape
       end    
       assert_equal nome_secao, linha.secao, "secao nao eh #{nome_secao.inspect}"
     end

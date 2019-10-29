@@ -1,12 +1,12 @@
 module Caligrafo
   module Descriptor
-    def arquivo(&bloco)
-      @@arquivo = Arquivo.new
-      @@arquivo.executar bloco
+    def arquivo(opcoes={}, &bloco)
+      @arquivo = Arquivo.new(opcoes)
+      @arquivo.executar bloco
     end
 
     def estrutura
-      @@arquivo
+      @arquivo
     end
 
     module Helpers
@@ -32,14 +32,18 @@ module Caligrafo
     class Arquivo
       include Helpers
 
-      attr_accessor :bloco
+      attr_accessor :bloco, :chave_secao
+
+      def initialize(opcoes={})
+        @chave_secao = opcoes[:chave_secao]
+      end
 
       def secoes
         @secoes ||= []
       end
 
       def secao(nome, &bloco)
-        secao = Secao.new(nome, bloco)
+        secao = Secao.new(nome, bloco, self)
         secoes << secao
         secao.executar bloco
       end
@@ -48,11 +52,12 @@ module Caligrafo
     class Secao
       include Helpers
 
-      attr_accessor :nome, :bloco
+      attr_accessor :nome, :bloco, :arquivo
 
-      def initialize(nome, bloco)
+      def initialize(nome, bloco, arquivo)
         @nome = nome
         @bloco = bloco
+        @arquivo = arquivo
       end
 
       def campos
@@ -72,7 +77,18 @@ module Caligrafo
       end
 
       def dessa_linha?(linha)
-        linha =~ /^#{campos.first.valor_padrao}/
+        if arquivo.chave_secao
+          campo_chave = campos.find {|s| s.nome == arquivo.chave_secao } 
+          raise "Chave de seção não localizada: #{arquivo.chave_secao}" unless campo_chave
+
+          index = campos.index(campo_chave)
+          anteriores = campos[0..index]
+          inicio = anteriores.map(&:tamanho).inject(0){|a,b| a + b } - 1
+          fim    = inicio + campo_chave.valor_padrao.size - 1
+          linha[inicio .. fim] == campo_chave.valor_padrao
+        else
+          linha =~ /^#{campos.first.valor_padrao}/
+        end
       end
     end
 

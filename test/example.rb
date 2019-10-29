@@ -60,3 +60,21 @@ class Portifolio < OpenStruct
 
 end
 
+class Exemplo2 < OpenStruct
+  include Caligrafo
+
+  arquivo(:chave_secao => :tipo) do
+    secao :cabecalho do
+      campo :nome, :tamanho => 4
+      campo :tipo, '01'
+    end
+    secao :corpo do
+      campo :idade,  :tamanho => 4
+      campo :tipo,  '02'
+    end
+    secao :rodape do
+      campo :altura,  :tamanho => 4
+      campo :tipo,  '03'
+    end
+  end
+end
