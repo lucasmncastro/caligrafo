@@ -91,7 +91,7 @@ class CaligrafoTest < Test::Unit::TestCase
           f.imprimir :linha, f.numero_linha
         end
         f.secao :telefones do |t|
-          f.linha = "02                                                                   ?"
+          f.linha = "02                                                                   ?".dup
           f.imprimir :descricao, "Fone##{f.indice + 1}: "
         end
         f.secao :sites do

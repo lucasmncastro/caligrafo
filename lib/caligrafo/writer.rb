@@ -1,7 +1,7 @@
 require 'caligrafo/converter'
 
 module Caligrafo
-  WINDOWS_EOL="\r\n"
+  WINDOWS_EOL = "\r\n".freeze
 
   module Writer
     def escrever_arquivo(nome, &bloco)
@@ -46,7 +46,7 @@ module Caligrafo
 
             # Só preenche o espaço quando o novo valor não for vazio.
             # Isso permite que a inicialização da linha inteira não seja sobrescrita com espaços em branco.
-            self.linha[campo.intervalo] = valor if not valor.strip.empty?
+            self.linha[campo.intervalo] = valor if not valor.to_s.strip.empty?
           end
           self.print self.linha
           self.print Caligrafo::WINDOWS_EOL

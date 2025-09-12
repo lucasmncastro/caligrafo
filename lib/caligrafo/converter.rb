@@ -73,7 +73,7 @@ module Caligrafo
 
     class Numerico < Base
       def initialize
-        @tipos = [Fixnum]
+        @tipos = [Integer]
       end
 
       def string_to_value(string)

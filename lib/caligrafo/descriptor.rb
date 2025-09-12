@@ -123,11 +123,11 @@ module Caligrafo
           when Range then
             self.inicio = posicao.first
             self.fim    = posicao.last
-          when Fixnum then
+          when Integer then
             self.inicio = calcular_inicio - posicao
             self.fim = self.inicio + posicao
           else
-            raise ArgumentError, 'use um Range ou Fixnum para definir a posicao do campo.'
+            raise ArgumentError, 'use um Range ou Integer para definir a posicao do campo.'
           end
         else
           ajustar_inicio_e_fim(opcoes.delete(:tamanho))

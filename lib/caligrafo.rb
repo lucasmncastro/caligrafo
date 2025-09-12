@@ -3,7 +3,7 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 require 'caligrafo/descriptor'
 require 'caligrafo/writer'
 require 'caligrafo/reader'
-require 'caligrafo/fixnum'
+require 'caligrafo/integer'
 
 module Caligrafo
   include Writer
@@ -15,4 +15,4 @@ module Caligrafo
   end
 end
 
-Fixnum.send :include, Caligrafo::Fixnum
+Integer.send :include, Caligrafo::Integer

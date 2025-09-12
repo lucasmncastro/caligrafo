@@ -1,5 +1,5 @@
 module Caligrafo
-  module Fixnum
+  module Integer
     def espacos
       ' ' * self
     end
